@@ -8,6 +8,7 @@ function App() {
   const ARROW_LEFT = "ArrowLeft";
   const ARROW_RIGHT = "ArrowRight";
   const STARTING_SPEED = "startingSpeed";
+  const CAMERA_Z_COORDINATE = 900;
   let scene, camera, renderer, direction;
 
   function init() {
@@ -23,7 +24,7 @@ function App() {
       1000
     );
     camera.position.x = 0;
-    camera.position.z = 900;
+    camera.position.z = CAMERA_Z_COORDINATE;
     camera.position.y = 0;
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -113,7 +114,14 @@ function App() {
       default:
         camera.position.z -= forwardSpeed;
     }
+
+    getScore();
+
   };
+
+  const getScore = () => {
+    const score = Math.abs(camera.position.z - CAMERA_Z_COORDINATE);
+  }
 
   function setDirectionOnEventKeyPress(event) {
     direction = event.code;
