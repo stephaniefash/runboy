@@ -20,10 +20,10 @@ function App() {
       1,
       window.innerWidth / window.innerHeight,
       0.01,
-      10000
+      1000
     );
     camera.position.x = 0;
-    camera.position.z = 600;
+    camera.position.z = 900;
     camera.position.y = 0;
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -40,6 +40,8 @@ function App() {
     );
     scene.add(line);
 
+    generateMultipleCubes();
+
     window.addEventListener("resize", onWindowResize, false);
   }
 
@@ -47,6 +49,33 @@ function App() {
     init();
     animate();
   });
+
+  const randomNumberGenerator = (min, max) => {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  };
+
+  const generateMultipleCubes = () => {
+    const lowerXRange = -2;
+    const higherXRange = 2;
+    const lowerZRange = -20000;
+    const higherZRange = 1000;
+
+    const NUMBER_OF_CUBES = 50;
+
+    [...Array(NUMBER_OF_CUBES).keys()].forEach((item) => {
+      let xCoordinate = randomNumberGenerator(lowerXRange, higherXRange);
+      let zCoordinate = randomNumberGenerator(lowerZRange, higherZRange);
+
+      let geometry = new THREE.BoxGeometry(1, 1, 1, 3, 3);
+      let edges = new THREE.EdgesGeometry(geometry);
+      let line = new THREE.LineSegments(
+        edges,
+        new THREE.LineBasicMaterial({ color: "black" })
+      );
+      line.position.set(xCoordinate, 0, zCoordinate);
+      scene.add(line);
+    });
+  };
 
   function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -61,24 +90,24 @@ function App() {
   }
 
   const handleMovementAnimation = () => {
-    let forwardSpeed = 2;
+    let forwardSpeed = 10;
     let noSpeedChange = 0;
-    let sideSpeed = 0.1;
+    let sideSpeed = 0.05;
 
     switch (direction) {
       case undefined:
         camera.position.z -= noSpeedChange;
         break;
       case ARROW_UP:
-        forwardSpeed += 1;
+        forwardSpeed += 4;
         camera.position.z -= forwardSpeed;
         break;
       case ARROW_LEFT:
-        camera.position.x += sideSpeed;
+        camera.position.x -= sideSpeed;
         camera.position.z -= forwardSpeed;
         break;
       case ARROW_RIGHT:
-        camera.position.x -= sideSpeed;
+        camera.position.x += sideSpeed;
         camera.position.z -= forwardSpeed;
         break;
       default:
@@ -87,7 +116,7 @@ function App() {
   };
 
   function setDirectionOnEventKeyPress(event) {
-    direction = event.code
+    direction = event.code;
   }
 
   return <div className="App" id="container" />;
