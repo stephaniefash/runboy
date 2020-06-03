@@ -6,13 +6,15 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 function App() {
   const pastelCream = "#f1e6c4";
+  // const pastelCream = "white";
   const ARROW_UP = "ArrowUp";
   const ARROW_LEFT = "ArrowLeft";
   const ARROW_RIGHT = "ArrowRight";
   const CAMERA_Z_COORDINATE = 1200;
   const width = window.innerWidth;
   const path = "http://192.168.1.222:8000/src/models/Horse.glb";
-  const snakePath = "http://192.168.1.222:8000/src/models/model_31a_-_timber_rattlesnake/scene.gltf"
+  const snakePath = "http://192.168.1.222:8000/src/models/model_31a_-_timber_rattlesnake/scene.gltf";
+  const elephantPath = "http://192.168.1.222:8000/src/models/elephant_cycle/scene.gltf"
   const lowerXRange = -3;
   const higherXRange = 3;
   const lowerZRange = -100000;
@@ -57,6 +59,7 @@ function App() {
 
     generateMultipleHorses();
     generateMultipleSnakes();
+    generateMultipleElephants();
 
 
     // horses
@@ -121,6 +124,15 @@ function App() {
     }
   }
 
+  const generateMultipleElephants = () => {
+    const NUMBER_OF_SNAKES = 15;
+    for (const item of [...Array(NUMBER_OF_SNAKES).keys()]) {
+      let xCoordinate = randomNumberGenerator(lowerXRange, higherXRange);
+      let zCoordinate = randomNumberGenerator(lowerZRange, higherZRange);
+      loadSingleElephant( xCoordinate, zCoordinate );
+    }
+  }
+
   const loadSingleSnake  = (xCoordinate, zCoordinate) => {
     loader.load(snakePath, function (gltf) {
       mesh = gltf.scene.children[0];
@@ -129,7 +141,21 @@ function App() {
       scene.add(mesh);
       mixer = new THREE.AnimationMixer(mesh);
       console.log(gltf.animations)
-      mixer.clipAction(gltf.animations[0]).setDuration(6).play();
+      mixer.clipAction(gltf.animations[0]).setDuration(10).play();
+      mixerGroup.push(mixer);
+    });
+  }
+
+  const loadSingleElephant  = (xCoordinate, zCoordinate) => {
+    loader.load(elephantPath, function (gltf) {
+      mesh = gltf.scene.children[0];
+      mesh.scale.setScalar(1.5);
+      mesh.position.set(xCoordinate, -2, zCoordinate);
+      mesh.rotateZ(135)
+      scene.add(mesh);
+      mixer = new THREE.AnimationMixer(mesh);
+      console.log(gltf.animations)
+      mixer.clipAction(gltf.animations[0]).setDuration(1).play();
       mixerGroup.push(mixer);
     });
   }
