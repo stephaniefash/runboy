@@ -4,6 +4,9 @@ import * as THREE from "three";
 import { Stopwatch } from "./helper/ScoreCounter";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
+
+//different animals in different rounds
+
 function App() {
   const pastelCream = "#f1e6c4";
   const ARROW_UP = "ArrowUp";
