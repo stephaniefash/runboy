@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import "./App.css";
 import * as THREE from "three";
 import { Stopwatch } from "./helper/ScoreCounter";
-import { loadObject } from "./helper/ObjectLoader";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 function App() {
@@ -12,9 +11,12 @@ function App() {
   const ARROW_RIGHT = "ArrowRight";
   const CAMERA_Z_COORDINATE = 1200;
   const width = 800;
+  const path = "http://192.168.1.222:8000/src/models/Horse.glb";
 
-  let scene, camera, renderer, direction, mixer;
-  let clock = new THREE.Clock()
+  let scene, camera, renderer, direction, mixer, mesh;
+  let mixerGroup = [];
+  let loader = new GLTFLoader();
+  let clock = new THREE.Clock();
 
   function init() {
     scene = new THREE.Scene();
@@ -50,31 +52,15 @@ function App() {
 
     // horses
 
-      const path = "http://192.168.1.222:8000/src/models/Horse.glb"
-      let light = new THREE.DirectionalLight( 0xefefff, 1.5 );
-      light.position.set( 1, 1, 1 ).normalize();
-      scene.add( light );
+    let light = new THREE.DirectionalLight(0xefefff, 1.5);
+    light.position.set(1, 1, 1).normalize();
+    scene.add(light);
 
-      let secondLight = new THREE.DirectionalLight( 0xffefef, 1.5 );
-      light.position.set( - 1, - 1, - 1 ).normalize();
-      scene.add( light );
+    let secondLight = new THREE.DirectionalLight(0xffefef, 1.5);
+    light.position.set(-1, -1, -1).normalize();
+    scene.add(secondLight);
 
-      let loader = new GLTFLoader();
-      loader.load( path, function ( gltf ) {
-
-          let mesh = gltf.scene.children[ 0 ];
-          mesh.scale.set( 0.025, 0.025, 0.025 );
-          mesh.position.set(0,-2,0)
-          scene.add( mesh );
-          mixer = new THREE.AnimationMixer( mesh );
-          mixer.clipAction( gltf.animations[ 0 ] ).setDuration( 1 ).play();
-
-      } );
-
-
-
-
-      window.addEventListener("resize", onWindowResize, false);
+    window.addEventListener("resize", onWindowResize, false);
   }
 
   function setDirectionOnEventKeyPress(event) {
@@ -103,16 +89,20 @@ function App() {
     for (const item of [...Array(NUMBER_OF_CUBES).keys()]) {
       let xCoordinate = randomNumberGenerator(lowerXRange, higherXRange);
       let zCoordinate = randomNumberGenerator(lowerZRange, higherZRange);
-
-      let geometry = new THREE.BoxGeometry(1, 1, 1, 3, 3);
-      let edges = new THREE.EdgesGeometry(geometry);
-      let line = new THREE.LineSegments(
-        edges,
-        new THREE.LineBasicMaterial({ color: "black" })
-      );
-      line.position.set(xCoordinate, 0, zCoordinate);
-      scene.add(line);
+      loadSingleHorse({ xCoordinate, zCoordinate });
     }
+  };
+
+  const loadSingleHorse = ({ xCoordinate, zCoordinate }) => {
+    loader.load(path, function (gltf) {
+      mesh = gltf.scene.children[0];
+      mesh.scale.setScalar(0.0152);
+      mesh.position.set(xCoordinate, -2, zCoordinate);
+      scene.add(mesh);
+      mixer = new THREE.AnimationMixer(mesh);
+      mixer.clipAction(gltf.animations[0]).setDuration(1).play();
+      mixerGroup.push(mixer);
+    });
   };
 
   function onWindowResize() {
@@ -125,10 +115,15 @@ function App() {
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
     handleMovementAnimation();
-      let dt = clock.getDelta();
-      if ( mixer ) mixer.update( dt );
-
+    updateMixers();
   }
+
+  const updateMixers = () => {
+    let dt = clock.getDelta();
+    mixerGroup.forEach((mixer) => {
+      if (mixer) mixer.update(dt);
+    });
+  };
 
   const [startScore, setStartScore] = useState(false);
 
@@ -136,7 +131,7 @@ function App() {
     let forwardSpeed = 10;
     let noSpeedChange = 0;
     let sideSpeed = 0.1;
-    let longPressAddedSpeed = 7
+    let longPressAddedSpeed = 7;
 
     switch (direction) {
       case undefined:
