@@ -10,8 +10,14 @@ function App() {
   const ARROW_LEFT = "ArrowLeft";
   const ARROW_RIGHT = "ArrowRight";
   const CAMERA_Z_COORDINATE = 1200;
-  const width = 800;
+  const width = window.innerWidth;
   const path = "http://192.168.1.222:8000/src/models/Horse.glb";
+  const snakePath = "http://192.168.1.222:8000/src/models/model_31a_-_timber_rattlesnake/scene.gltf"
+  const lowerXRange = -3;
+  const higherXRange = 3;
+  const lowerZRange = -100000;
+  const higherZRange = 1000;
+
 
   let scene, camera, renderer, direction, mixer, mesh;
   let mixerGroup = [];
@@ -20,7 +26,9 @@ function App() {
 
   function init() {
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(pastelCream);
+      addFogToScene();
+
+      scene.background = new THREE.Color(pastelCream);
     let container = document.getElementById("container");
     document.onkeydown = setDirectionOnEventKeyPress;
 
@@ -32,12 +40,11 @@ function App() {
     );
     camera.position.x = 0;
     camera.position.z = CAMERA_Z_COORDINATE;
-    camera.position.y = 0;
+    camera.position.y = -1;
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(width, window.innerHeight);
-    renderer.outputEncoding = THREE.sRGBEncoding;
     container.appendChild(renderer.domElement);
 
     let geometry = new THREE.BoxGeometry(1, 1, 1, 3, 3);
@@ -48,7 +55,9 @@ function App() {
     );
     scene.add(line);
 
-    generateMultipleCubes();
+    generateMultipleHorses();
+    generateMultipleSnakes();
+
 
     // horses
 
@@ -78,20 +87,18 @@ function App() {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   };
 
-  const generateMultipleCubes = () => {
-    const lowerXRange = -3;
-    const higherXRange = 3;
-    const lowerZRange = -200000;
-    const higherZRange = 1000;
+  const generateMultipleHorses = () => {
 
-    const NUMBER_OF_CUBES = 500;
 
-    for (const item of [...Array(NUMBER_OF_CUBES).keys()]) {
+    const NUMBER_OF_HORSES = 250;
+
+    for (const item of [...Array(NUMBER_OF_HORSES).keys()]) {
       let xCoordinate = randomNumberGenerator(lowerXRange, higherXRange);
       let zCoordinate = randomNumberGenerator(lowerZRange, higherZRange);
       loadSingleHorse({ xCoordinate, zCoordinate });
     }
   };
+
 
   const loadSingleHorse = ({ xCoordinate, zCoordinate }) => {
     loader.load(path, function (gltf) {
@@ -105,10 +112,39 @@ function App() {
     });
   };
 
+  const generateMultipleSnakes = () => {
+    const NUMBER_OF_SNAKES = 20;
+    for (const item of [...Array(NUMBER_OF_SNAKES).keys()]) {
+      let xCoordinate = randomNumberGenerator(lowerXRange, higherXRange);
+      let zCoordinate = randomNumberGenerator(lowerZRange, higherZRange);
+      loadSingleSnake( xCoordinate, zCoordinate );
+    }
+  }
+
+  const loadSingleSnake  = (xCoordinate, zCoordinate) => {
+    loader.load(snakePath, function (gltf) {
+      mesh = gltf.scene.children[0];
+      mesh.scale.setScalar(0.5);
+      mesh.position.set(xCoordinate, -4, zCoordinate);
+      scene.add(mesh);
+      mixer = new THREE.AnimationMixer(mesh);
+      console.log(gltf.animations)
+      mixer.clipAction(gltf.animations[0]).setDuration(6).play();
+      mixerGroup.push(mixer);
+    });
+  }
+
+
   function onWindowResize() {
     camera.aspect = width / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(width, window.innerHeight);
+  }
+
+  const addFogToScene = () => {
+      const near = 1;
+      const far = 1200;
+      scene.fog = new THREE.Fog(pastelCream, near, far);
   }
 
   function animate() {
@@ -128,7 +164,7 @@ function App() {
   const [startScore, setStartScore] = useState(false);
 
   const handleMovementAnimation = () => {
-    let forwardSpeed = 10;
+    let forwardSpeed = 15;
     let noSpeedChange = 0;
     let sideSpeed = 0.1;
     let longPressAddedSpeed = 7;
