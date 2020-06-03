@@ -10,10 +10,11 @@ function App() {
   const ARROW_UP = "ArrowUp";
   const ARROW_LEFT = "ArrowLeft";
   const ARROW_RIGHT = "ArrowRight";
-  const CAMERA_Z_COORDINATE = 900;
+  const CAMERA_Z_COORDINATE = 1200;
   const width = 800;
 
-  let scene, camera, renderer, direction;
+  let scene, camera, renderer, direction, mixer;
+  let clock = new THREE.Clock()
 
   function init() {
     scene = new THREE.Scene();
@@ -47,7 +48,33 @@ function App() {
 
     generateMultipleCubes();
 
-    window.addEventListener("resize", onWindowResize, false);
+    // horses
+
+      const path = "http://192.168.1.222:8000/src/models/Horse.glb"
+      let light = new THREE.DirectionalLight( 0xefefff, 1.5 );
+      light.position.set( 1, 1, 1 ).normalize();
+      scene.add( light );
+
+      let secondLight = new THREE.DirectionalLight( 0xffefef, 1.5 );
+      light.position.set( - 1, - 1, - 1 ).normalize();
+      scene.add( light );
+
+      let loader = new GLTFLoader();
+      loader.load( path, function ( gltf ) {
+
+          let mesh = gltf.scene.children[ 0 ];
+          mesh.scale.set( 0.025, 0.025, 0.025 );
+          mesh.position.set(0,-2,0)
+          scene.add( mesh );
+          mixer = new THREE.AnimationMixer( mesh );
+          mixer.clipAction( gltf.animations[ 0 ] ).setDuration( 1 ).play();
+
+      } );
+
+
+
+
+      window.addEventListener("resize", onWindowResize, false);
   }
 
   function setDirectionOnEventKeyPress(event) {
@@ -98,6 +125,9 @@ function App() {
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
     handleMovementAnimation();
+      let dt = clock.getDelta();
+      if ( mixer ) mixer.update( dt );
+
   }
 
   const [startScore, setStartScore] = useState(false);
@@ -113,7 +143,7 @@ function App() {
         camera.position.z -= noSpeedChange;
         break;
       case ARROW_UP:
-        forwardSpeed += 7;
+        forwardSpeed += longPressAddedSpeed;
         camera.position.z -= forwardSpeed;
         break;
       case ARROW_LEFT:
