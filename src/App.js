@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import "./App.css";
 import * as THREE from "three";
 import { Stopwatch } from "./helper/ScoreCounter";
+import { loadObject } from "./helper/ObjectLoader";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 function App() {
   const pastelCream = "#f1e6c4";
@@ -66,10 +68,10 @@ function App() {
   const generateMultipleCubes = () => {
     const lowerXRange = -3;
     const higherXRange = 3;
-    const lowerZRange = -20000;
+    const lowerZRange = -200000;
     const higherZRange = 1000;
 
-    const NUMBER_OF_CUBES = 100;
+    const NUMBER_OF_CUBES = 500;
 
     for (const item of [...Array(NUMBER_OF_CUBES).keys()]) {
       let xCoordinate = randomNumberGenerator(lowerXRange, higherXRange);
@@ -104,13 +106,14 @@ function App() {
     let forwardSpeed = 10;
     let noSpeedChange = 0;
     let sideSpeed = 0.1;
+    let longPressAddedSpeed = 7
 
     switch (direction) {
       case undefined:
         camera.position.z -= noSpeedChange;
         break;
       case ARROW_UP:
-        forwardSpeed += 4;
+        forwardSpeed += 7;
         camera.position.z -= forwardSpeed;
         break;
       case ARROW_LEFT:
