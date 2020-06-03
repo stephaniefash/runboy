@@ -6,3 +6,17 @@
     left: 0;
     right: 0;
 }
+#container{
+    z-index: 0;
+}
+
+.score-counter{
+    z-index: 10;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    margin-top: 100px;
+
+}
